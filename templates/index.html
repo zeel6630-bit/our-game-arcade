@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crack the Code</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">⌘</span><div><b>Crack the Code</b><small>Think · Test · Crack</small></div></div>
+  <nav class="toolbar" aria-label="Navigation">
+    <button class="icon-btn" id="backBtn" title="Back" aria-label="Back">←</button>
+    <button class="icon-btn" id="forwardBtn" title="Forward" aria-label="Forward">→</button>
+    <button class="icon-btn" id="homeBtn" title="Home" aria-label="Home">⌂</button>
+    <div class="tool-menu"><button class="icon-btn" id="moreBtn" title="Menu" aria-label="Menu">⋯</button>
+      <div class="dropdown hidden" id="moreMenu">
+        <button id="rulesBtn">📖 Rulebook</button>
+        <button id="labBtn">🧪 Guess Lab</button>
+        <button id="battleBtn">🤖 Robot Battle</button>
+        <button id="twoPlayerBtn">💞 Two Player</button>
+        <button id="dailyBtn">📅 Daily Challenge</button>
+        <button id="recordsBtn">🏆 Records</button>
+        <button id="coachToggle">🧠 Coach: On</button>
+        <button id="focusToggle">🎯 Focus Mode</button>
+        <button id="themeToggle">◐ Theme</button>
+        <button id="profileBtn">👤 Player</button>
+        <button id="settingsBtn">⚙ Settings</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main>
+<section id="setup" class="panel hero view">
+  <div class="eyebrow">NUMBER DEDUCTION GAME</div><h1>Crack the<br><span>secret.</span> 🔐</h1>
+  <p class="hero-copy">A hidden code. Two clues. Infinite ways to think. Use <b>SAME</b> and <b>CORRECT</b> to narrow the possibilities instead of guessing blindly.</p>
+  <div class="calm-strip"><span>🌊</span><div><b>Think before you guess.</b><small>Eliminate · rearrange · test · update.</small></div></div>
+  <div class="config-grid">
+    <div class="config-card"><div class="config-title">Code length</div><div class="choice-grid" id="lengthChoices"><button data-length="3">3</button><button data-length="4" class="selected">4</button><button data-length="5">5</button><button data-length="6">6</button><button data-length="7">7</button></div></div>
+    <div class="config-card"><div class="config-title">Number style</div><div class="style-choice" id="modeChoices"><button data-mode="unique" class="selected"><b>✨ Unique</b><small>Every digit is different</small></button><button data-mode="repeat"><b>🎲 Repetition</b><small>Duplicates may appear</small></button></div><div id="repeatOptions" class="repeat-options hidden"><span>Maximum copies</span><div id="repeatChoices" class="repeat-grid"></div><small>Limit only. A repeat may appear or may not.</small></div></div>
+  </div>
+  <div class="config-card"><div class="config-title">Challenge level</div><div class="difficulty-grid" id="difficultyChoices"><button data-difficulty="relaxed" class="selected">🌿 Relaxed</button><button data-difficulty="easy">🙂 Easy</button><button data-difficulty="normal">🧠 Normal</button><button data-difficulty="hard">🔥 Hard</button><button data-difficulty="extreme">💀 Extreme</button></div></div>
+  <div class="option-row"><label class="switch"><input type="checkbox" id="pressureToggle"><span></span> Pressure mode</label><label class="switch"><input type="checkbox" id="noBsToggle"><span></span> No-BS mode</label></div>
+  <div id="pressureConfig" class="pressure-config hidden"><div><label>Time limit <small>minutes</small></label><input id="pressureMinutes" type="number" min="1" max="120" value="5"></div><div><label>Attempt limit <small>optional</small></label><input id="pressureAttempts" type="number" min="1" max="999" placeholder="No limit"></div><p>Set one limit or both. Pressure mode ends the run when either limit is reached.</p></div>
+  <button class="primary-btn" id="startBtn">Start challenge <span>→</span></button>
+</section>
+
+<section id="game" class="panel hidden view">
+  <div class="game-head"><div><div class="eyebrow" id="gameModeLabel">4 DIGIT · UNIQUE</div><span class="level-pill" id="gameLevelLabel">RELAXED</span><h2>Crack the code 🔎</h2></div><div class="timer-block"><small id="timerLabel">TIME</small><div class="timer" id="timer">00:00</div></div></div>
+  <div id="pressureBanner" class="pressure-banner hidden"></div>
+  <div class="game-layout">
+    <aside class="live-rail">
+      <div><small>⏱ TIME</small><strong id="railTime">00:00</strong></div>
+      <div><small>🎯 ATTEMPTS</small><strong id="railAttempts">0</strong></div>
+      <div><small>🏆 BEST</small><strong id="railBest">—</strong></div>
+      <div><small>📈 HIGHEST</small><strong id="railWorst">—</strong></div>
+      <div><small>🔥 STREAK</small><strong id="railStreak">0</strong></div>
+    </aside>
+    <div class="game-core">
+      <div class="secret-slots" id="secretSlots"></div>
+      <p class="game-instruction">Type your whole guess normally. You only receive counts — never which digit or position.</p>
+      <div class="guess-entry"><input id="guessInput" inputmode="numeric" autocomplete="off" aria-label="Guess" placeholder="Enter your code"><span id="guessCounter">0 / 4</span></div>
+      <button class="primary-btn" id="guessBtn">Check guess <span>✓</span></button>
+      <div id="message" class="message"></div>
+      <div class="feedback"><div><span>🔵</span><small>SAME</small><strong id="sameCount">0</strong><em>digits present</em></div><div><span>🟢</span><small>CORRECT</small><strong id="correctCount">0</strong><em>right position</em></div></div>
+      <div class="attempt-line"><span>Attempts</span><b id="attemptCount">0</b></div>
+
+      <div class="constraint-card" id="constraintCard">
+        <div class="section-title">🧩 Constraint map <span class="muted-inline">your scratchpad</span></div>
+        <div class="digit-map" id="digitMap"></div>
+        <div class="position-map" id="positionMap"></div>
+        <small>Click a digit to cycle unknown → possible → ruled out. Use the position boxes to record your own candidate for each position.</small>
+      </div>
+
+      <div class="coach-card" id="coachCard"><div class="section-title">🧠 Thinking Coach</div><p id="coachPrompt">Start by establishing what you know.</p><button class="mini-btn" id="nextCoachBtn">Next thought →</button></div>
+      <div class="history-title">Guess history</div><div id="history" class="history"></div>
+      <button class="secondary-btn" id="newGameBtn">↻ New game</button>
+    </div>
+  </div>
+</section>
+
+<section id="records" class="panel hidden view"><div class="section-head"><div><div class="eyebrow">YOUR PERFORMANCE</div><h2>Records 🏆</h2></div><button class="ghost-btn closePanel">Close</button></div><div class="stats-grid" id="statsGrid"></div><div class="history-title">Recent games</div><div id="recentGames" class="recent-games"></div></section>
+<footer>Crack the Code · Local thinking game · calm deduction over hit-and-hope</footer>
+</main>
+
+<!-- Win -->
+<div id="winOverlay" class="overlay hidden"><canvas id="fxCanvas"></canvas><div class="win-card"><div class="win-icon">🎆</div><div class="eyebrow">CODE CRACKED</div><h2>You win! 🏆</h2><p>The secret was</p><div class="revealed-code" id="revealedCode"></div><div class="win-stats"><div><small>Guesses</small><b id="winGuesses">0</b></div><div><small>Time</small><b id="winTime">00:00</b></div></div><div id="recordBadge" class="record-badge hidden">⭐ New personal best!</div><div id="winMessage" class="win-message"></div><button class="primary-btn" id="playAgainBtn">Play again →</button><button class="ghost-btn" id="winHomeBtn">Home</button></div></div>
+
+<!-- Rulebook -->
+<div id="rulesOverlay" class="overlay hidden"><div class="modal-card notebook"><div class="section-head"><div><div class="eyebrow">THE DEDUCTION NOTEBOOK</div><h2>How to play 📖</h2></div><button class="ghost-btn closePanel">Close</button></div><div class="tabs" data-tabs="rules"><button class="selected" data-tab="rules-basics">Basics</button><button data-tab="rules-feedback">Feedback</button><button data-tab="rules-modes">Modes</button><button data-tab="rules-strategy">Strategy</button><button data-tab="rules-tools">Tools</button><button data-tab="rules-battle">Battle</button></div>
+<div class="tab-panel selected" id="rules-basics"><h3>🎯 Objective</h3><p>The computer secretly creates a code using the selected length. Your job is to discover the exact code. The code can be 3–7 digits. In Unique mode every digit is different. In Repetition mode duplicates are allowed within your chosen maximum.</p><h3>🔁 A normal turn</h3><p>Think → enter one complete guess → submit → read SAME and CORRECT → update your notes → choose the next experiment. You never need to click individual digit boxes.</p><h3>🏁 Win</h3><p>When CORRECT equals the code length, every position is correct and the code is cracked.</p></div>
+<div class="tab-panel" id="rules-feedback"><h3>🔵 SAME</h3><p>SAME counts how many digit occurrences from your guess exist somewhere in the secret. It does not reveal which digits.</p><div class="example"><b>Secret:</b> 5831 · <b>Guess:</b> 1234 · <b>SAME:</b> 2</div><h3>🟢 CORRECT</h3><p>CORRECT counts digits that exist and are already in the exact position. CORRECT is included in SAME.</p><div class="example"><b>Secret:</b> 5831 · <b>Guess:</b> 5839 · <b>CORRECT:</b> 3 · <b>SAME:</b> 3</div><h3>🎲 Repetition feedback</h3><p>When repetition is allowed, the game counts available occurrences only. A secret containing two 5s cannot give three matches for a guess containing three 5s.</p></div>
+<div class="tab-panel" id="rules-modes"><h3>✨ Unique</h3><p>Every digit appears at most once. For a 4-digit game, 5831 is valid but 5531 is invalid.</p><h3>🎲 Repetition</h3><p>Your selected limit is a <b>maximum</b>, not a promise. “Up to 2×” means a digit may appear zero, one, or two times. It does not force a duplicate.</p><h3>🎚️ Difficulty</h3><p>Relaxed, Easy, Normal, Hard and Extreme change the challenge experience. The secret rules stay honest; difficulty should never reveal the answer.</p><h3>⚡ Pressure</h3><p>Set a time limit, an attempt limit, or both. The game ends when either limit is reached.</p><h3>🧘 Focus</h3><p>Focus Mode removes secondary navigation clutter and keeps your <b>Constraint Map visible</b>. It is a distraction-reduction mode, not a hint mode.</p><h3>🚫 No-BS</h3><p>No-BS removes optional coaching and decorative thinking panels. It leaves the core deduction surface.</p></div>
+<div class="tab-panel" id="rules-strategy"><h3>🧠 The useful loop</h3><p><b>Observe → Hypothesize → Test → Update → Repeat.</b> A guess should answer a question, not merely hope to be right.</p><h3>🔬 Controlled experiments</h3><p>When possible, change one useful variable at a time. If you change everything, a new result can be difficult to interpret.</p><h3>🚫 Hit-and-hope</h3><p>Random guessing may eventually succeed, but it usually wastes information. A stronger guess tests a hypothesis, rearranges known digits, or eliminates a useful group of possibilities.</p><h3>🧩 Constraint thinking</h3><p>Separate what is impossible, what is possible, and what is merely likely. Your Constraint Map is a manual reasoning surface, not an automatic solver.</p><h3>❓ Falsification</h3><p>Ask: “What result would prove my current idea wrong?” This keeps you from protecting a favorite hypothesis.</p></div>
+<div class="tab-panel" id="rules-tools"><h3>🧪 Guess Lab</h3><p>Guess Lab is a practice room for testing guesses and learning from feedback. It does <b>not</b> change your Records, Streaks, or normal game history.</p><h3>🗺️ Constraint Map</h3><p>Mark digits as unknown, possible, or ruled out. Under it, record a candidate for each position. These notes are yours; the game never fills them with the answer.</p><h3>🧠 Coach</h3><p>Coach is optional. Turn it off whenever you want a clean puzzle. When on, it asks thinking questions without telling you the answer.</p><h3>📊 Post-game analysis</h3><p>After a win, you can see attempts, time, repeated guesses, unique guesses, and an efficiency indicator. It is a reflection tool, not an intelligence score.</p></div>
+<div class="tab-panel" id="rules-battle"><h3>🤖 Robot vs Human</h3><p>Both sides have a private secret using the same configuration. The turns alternate. The robot guesses your secret; you provide SAME/CORRECT if Auto Feedback is off. Then you guess the robot's secret; the robot automatically returns SAME/CORRECT.</p><h3>⚙️ Auto Feedback</h3><p>When Auto Feedback is on, the game calculates the robot's feedback from your secret automatically. You do not have to enter SAME/CORRECT manually.</p><h3>🏆 Battle win</h3><p>The first side to reach CORRECT equal to the code length wins. The robot's secret mask always matches the selected length.</p></div></div></div>
+
+<!-- Guess Lab -->
+<div id="labOverlay" class="overlay hidden"><div class="modal-card lab-card"><div class="section-head"><div><div class="eyebrow">PRACTICE WITHOUT RECORDS</div><h2>Guess Lab 🧪</h2></div><button class="ghost-btn closePanel">Close</button></div><div class="lab-layout"><div class="lab-scenario"><h3>Test a hypothesis</h3><p>Use a fixed 4-digit practice secret. It is hidden. Make guesses exactly like the normal game. Your lab results are temporary and never enter Records.</p><div class="lab-secret-mask">● ● ● ●</div><div class="lab-feedback"><span>SAME <b id="labSame">—</b></span><span>CORRECT <b id="labCorrect">—</b></span></div><input id="labGuess" class="single-code-input" inputmode="numeric" maxlength="4" placeholder="Enter 4 digits" autocomplete="off"><div class="lab-actions"><button class="primary-btn" id="labSubmit">Test guess</button><button class="ghost-btn" id="labReset">Reset lab</button></div><div id="labResult" class="message"></div></div><div class="lab-side"><h3>What are you testing?</h3><ul><li>Which digits are present?</li><li>Can you increase CORRECT without losing SAME?</li><li>Can you rearrange known digits?</li><li>Can you avoid repeating an already-tested idea?</li></ul><div class="lab-note">The point is not to solve instantly. The point is to make each experiment useful.</div></div></div></div></div>
+
+<!-- Daily -->
+<div id="dailyOverlay" class="overlay hidden"><div class="modal-card"><div class="section-head"><div><div class="eyebrow">TODAY'S CHALLENGE</div><h2>Daily Code 📅</h2></div><button class="ghost-btn closePanel">Close</button></div><div class="daily-card"><h3>4 digits · Unique · Normal</h3><p>One shared local challenge for today. Your result can appear in Records as a Daily game.</p><button class="primary-btn" id="startDailyBtn">Start today's code →</button></div></div></div>
+
+<!-- Profiles -->
+<div id="profileOverlay" class="overlay hidden"><div class="modal-card"><div class="section-head"><div><div class="eyebrow">LOCAL PROFILES</div><h2>Who's playing?</h2></div><button class="ghost-btn closePanel">Close</button></div><div id="profileList" class="profile-list"></div><div class="inline-form"><input id="newProfileName" placeholder="New player name" maxlength="24"><button class="primary-btn" id="createProfileBtn">Add player</button></div><p class="muted">Each local profile keeps separate records, history, streaks and settings. No login is required.</p></div></div>
+
+<!-- Settings -->
+<div id="settingsOverlay" class="overlay hidden"><div class="modal-card"><div class="section-head"><div><div class="eyebrow">LOCAL SETTINGS</div><h2>Settings ⚙</h2></div><button class="ghost-btn closePanel">Close</button></div><div class="settings-list"><label class="switch"><input type="checkbox" id="settingsCoach"><span></span> Thinking Coach</label><label class="switch"><input type="checkbox" id="settingsEffects" checked><span></span> Victory effects</label><label class="switch"><input type="checkbox" id="settingsBattleAuto" checked><span></span> Battle Auto Feedback</label></div><h3>Data</h3><p class="muted">Reset Records keeps your old game history visible but removes it from performance statistics. Reset History deletes the profile's completed games. Reset Everything removes all local profiles and game data.</p><div class="reset-grid"><button class="danger-btn" data-reset="records">Reset records</button><button class="danger-btn" data-reset="history">Reset history</button><button class="danger-btn" data-reset="all">Reset everything</button></div></div></div>
+
+<!-- Battle setup -->
+<div id="battleSetupOverlay" class="overlay hidden"><div class="modal-card"><div class="section-head"><div><div class="eyebrow">HUMAN VS ROBOT</div><h2>Robot Battle 🤖</h2></div><button class="ghost-btn closePanel">Close</button></div><div class="battle-config"><label>Length<select id="battleLength"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select></label><label>Style<select id="battleMode"><option value="unique">Unique</option><option value="repeat">Repetition</option></select></label><label>Repeat limit<select id="battleRepeat"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label><label>Robot level<select id="battleDifficulty"><option value="relaxed">Relaxed</option><option value="easy">Easy</option><option selected value="normal">Normal</option><option value="hard">Hard</option><option value="extreme">Extreme</option></select></label></div><label class="battle-auto-switch switch"><input type="checkbox" id="battleAuto" checked><span></span> Auto Feedback — calculate the robot's SAME/CORRECT for me</label><div class="battle-secret"><label>Your secret <small>Keep this hidden from the robot.</small></label><input id="yourBattleSecret" class="single-code-input" inputmode="numeric" autocomplete="off" placeholder="Your secret"></div><button class="primary-btn" id="startBattleBtn">Start battle →</button><p class="muted">Both sides get the same code rules. The robot has its own hidden code; you must solve it while it solves yours.</p></div></div>
+
+<!-- Battle -->
+<div id="battleOverlay" class="overlay hidden"><div class="modal-card battle-card"><div class="section-head"><div><div class="eyebrow">ROBOT VS HUMAN</div><h2 id="battleTurnTitle">🤖 Robot's turn</h2></div><button class="ghost-btn" id="exitBattle">Exit</button></div><div class="battle-split"><div><small>YOUR SECRET</small><div id="yourSecretMask" class="masked"></div></div><div><small>ROBOT SECRET</small><div id="robotSecretMask" class="masked"></div></div></div><div class="battle-meta"><span id="battleRound">ROUND 1</span><span id="battleAutoState">AUTO ON</span><span id="battleLevelPill">NORMAL</span></div><div class="turn-card"><div id="battleGuessLabel" class="eyebrow">ROBOT GUESS</div><div class="big-guess" id="battleGuess">----</div><div id="robotFeedbackForm" class="robot-feedback-form hidden"><input id="robotSameInput" type="number" min="0" placeholder="SAME"><input id="robotCorrectInput" type="number" min="0" placeholder="CORRECT"><button class="mini-btn" id="robotFeedbackBtn">Submit feedback</button></div><div id="humanTurn" class="human-turn hidden"><input id="humanBattleGuess" class="single-code-input" inputmode="numeric" autocomplete="off" placeholder="Your guess"><button class="primary-btn" id="humanGuessBtn">Guess →</button></div><div class="feedback-row"><span>SAME <b id="battleSame">—</b></span><span>CORRECT <b id="battleCorrect">—</b></span></div><p id="battleStatus" class="message">Robot is thinking…</p></div><div class="history-title">Battle conversation</div><div id="battleLog" class="battle-log"></div></div></div>
+
+
+<!-- Two Player -->
+<div id="twoPlayerSetupOverlay" class="overlay hidden">
+  <div class="modal-card mp-card">
+    <div class="section-head">
+      <div><div class="eyebrow">LONG-DISTANCE MULTIPLAYER</div><h2>Two Player 💞</h2></div>
+      <button class="ghost-btn closePanel">Close</button>
+    </div>
+    <div class="mp-choice-grid">
+      <div class="mp-box">
+        <h3>Create a private room</h3>
+        <p>Choose the V6 rules, create a room, then send the code or link to your partner.</p>
+        <label>Your name<input id="mpCreateName" maxlength="24" placeholder="Player 1"></label>
+        <button class="primary-btn" id="mpCreateBtn">Create room →</button>
+      </div>
+      <div class="mp-box">
+        <h3>Join a room</h3>
+        <p>Enter the six-character room code. You will use your own Internet connection.</p>
+        <label>Your name<input id="mpJoinName" maxlength="24" placeholder="Player 2"></label>
+        <label>Room code<input id="mpJoinCode" maxlength="6" placeholder="ABC123" autocomplete="off"></label>
+        <button class="secondary-btn" id="mpJoinBtn">Join room</button>
+      </div>
+    </div>
+    <div class="mp-server-row"><span id="mpConnectionDot">●</span><span id="mpConnectionText">Not connected</span><button class="mini-btn" id="mpServerBtn">Server</button></div>
+  </div>
+</div>
+
+<div id="mpRoomOverlay" class="overlay hidden">
+  <div class="modal-card mp-card mp-room-card">
+    <div class="section-head">
+      <div><div class="eyebrow">PRIVATE ROOM</div><h2 id="mpRoomTitle">Room</h2></div>
+      <button class="ghost-btn" id="mpLeaveBtn">Leave</button>
+    </div>
+    <div class="mp-room-code"><small>ROOM CODE</small><b id="mpRoomCode">------</b><button class="mini-btn" id="mpCopyRoomBtn">Copy link</button></div>
+    <div class="mp-players">
+      <div class="mp-player" id="mpPlayer1"><span>1</span><div><b id="mpP1Name">Player 1</b><small id="mpP1State">Waiting</small></div></div>
+      <div class="mp-vs">VS</div>
+      <div class="mp-player" id="mpPlayer2"><span>2</span><div><b id="mpP2Name">Player 2</b><small id="mpP2State">Waiting</small></div></div>
+    </div>
+    <div id="mpHostSettings" class="mp-settings">
+      <div class="section-title">Game settings <span class="muted-inline">Host controls</span></div>
+      <div class="mp-config-grid">
+        <label>Code length<select id="mpLength"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select></label>
+        <label>Number style<select id="mpMode"><option value="unique">Unique</option><option value="repeat">Repetition</option></select></label>
+        <label id="mpRepeatWrap">Maximum copies<select id="mpRepeat"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></label>
+        <label>Challenge<select id="mpDifficulty"><option value="relaxed">Relaxed</option><option value="easy">Easy</option><option selected value="normal">Normal</option><option value="hard">Hard</option><option value="extreme">Extreme</option></select></label>
+        <label>Feedback<select id="mpFeedback"><option value="automatic">Automatic</option><option value="manual">Manual</option></select></label>
+        <label class="mp-check"><input type="checkbox" id="mpPressure"> Pressure mode</label>
+      </div>
+      <div id="mpPressureWrap" class="mp-pressure hidden"><label>Minutes<input id="mpTime" type="number" min="1" max="120" value="5"></label><label>Attempts<input id="mpAttempts" type="number" min="1" max="999" placeholder="No limit"></label></div>
+      <button class="secondary-btn" id="mpApplySettings">Apply settings</button>
+    </div>
+    <div id="mpGuestSettings" class="mp-guest-settings hidden"><div class="section-title">Game settings <span class="muted-inline">Host selected</span></div><div id="mpGuestSettingsText"></div></div>
+    <div class="mp-secret-area">
+      <div class="section-title">Your secret code <span id="mpSecretLength" class="muted-inline">4 DIGITS</span><span class="muted-inline">Never shown to your opponent</span></div>
+      <p id="mpSecretHint">Enter your secret. The game starts only when both players are ready.</p>
+      <div class="mp-secret-entry"><input id="mpSecretInput" class="single-code-input" inputmode="numeric" autocomplete="off" placeholder="Your secret"><button class="primary-btn" id="mpSecretBtn">Lock secret</button></div>
+      <div id="mpSecretStatus" class="message"></div>
+    </div>
+    <div class="mp-turn-banner" id="mpTurnBanner">Waiting for both players…</div>
+  </div>
+</div>
+
+<div id="mpGameOverlay" class="overlay hidden">
+  <div class="modal-card mp-card mp-game-card">
+    <div class="section-head">
+      <div><div class="eyebrow">TWO PLAYER · <span id="mpGameModeLabel">AUTOMATIC</span></div><h2 id="mpGameTitle">Crack the code together ⚔️</h2></div>
+      <button class="ghost-btn" id="mpGameLeaveBtn">Leave</button>
+    </div>
+    <div class="mp-game-status">
+      <span id="mpRoundLabel">ROUND 1</span><b id="mpMyTurnLabel">YOUR TURN</b><span id="mpFeedbackLabel">AUTO</span>
+    </div>
+    <div class="mp-game-columns">
+      <section class="mp-play-surface">
+        <div class="mp-opponent"><small>YOU ARE GUESSING</small><strong id="mpTargetName">Player 2</strong><div class="masked mp-target-mask" id="mpTargetMask">● ● ● ●</div></div>
+        <div id="mpGuessArea">
+          <input id="mpGuessInput" class="single-code-input" inputmode="numeric" autocomplete="off" placeholder="Enter your guess">
+          <button class="primary-btn" id="mpGuessBtn">Submit guess →</button>
+        </div>
+        <div id="mpWaitingArea" class="mp-waiting hidden">⏳ Waiting for the other player…</div>
+        <div id="mpPendingFeedback" class="mp-pending hidden">
+          <div class="eyebrow">VERIFY THIS GUESS</div>
+          <p><b id="mpPendingGuesser">Player 2</b> guessed <strong id="mpPendingGuess">----</strong>. Check your secret and enter the counts.</p>
+          <div class="mp-feedback-inputs"><label>SAME<input id="mpManualSame" type="number" min="0"></label><label>CORRECT<input id="mpManualCorrect" type="number" min="0"></label></div>
+          <button class="primary-btn" id="mpManualSubmit">Send verified result →</button>
+        </div>
+        <div id="mpLatestResult" class="mp-result hidden"><div><small>LAST RESULT</small><strong id="mpLatestGuess">----</strong></div><div><span>SAME</span><b id="mpLatestSame">0</b></div><div><span>CORRECT</span><b id="mpLatestCorrect">0</b></div></div>
+        <div id="mpGameMessage" class="message"></div>
+      </section>
+      <aside class="mp-history-panel">
+        <div class="section-title">📜 Match history</div>
+        <p class="muted">Every guess appears here in order.</p>
+        <div id="mpHistory" class="mp-history"></div>
+      </aside>
+    </div>
+    <div id="mpWinner" class="mp-winner hidden"><span>🏆</span><div><div class="eyebrow">CODE CRACKED</div><h2 id="mpWinnerTitle">You win!</h2><p id="mpWinnerText"></p></div></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body></html>
